@@ -29,19 +29,27 @@
           foo: { bar: "bar" },
           html: '<button>adfadsf</button>'
         },
+        created(){
+          setTimeout(() => {
+            this.data.test = '你好呀'
+          }, 2000);
+        },
         methods: {
             onClick() {
                 alert('blabla')
             }
         },
       });
-      console.log(o.$data.test);
-      o.$data.test = "hello,kvue!";
-      console.log(o.$data.test);
 
-      console.log(o.$data.foo.bar);
-      o.$data.foo.bar = "hello,kvue!";
-      console.log(o.$data.foo.bar);
+      
+
+      // console.log(o.$data.test);
+      // o.$data.test = "hello,kvue!";
+      // console.log(o.$data.test);
+
+      // console.log(o.$data.foo.bar);
+      // o.$data.foo.bar = "hello,kvue!";
+      // console.log(o.$data.foo.bar);
     </script>
 
     <!-- <div id="app">
