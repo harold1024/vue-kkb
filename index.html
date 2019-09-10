@@ -4,16 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>kvue</title>
+    <title>Document</title>
   </head>
   <body>
     <div id="app">
+      <!-- 插值绑定 -->
       <p>{{name}}</p>
+      <!-- 指令解析 -->
       <p k-text="name"></p>
       <p>{{age}}</p>
-      <p>{{doubleAge}}</p>
+      <p>
+        {{doubleAge}}
+      </p>
+      <!-- 双向绑定 -->
       <input type="text" k-model="name" />
+      <!-- 事件处理 -->
       <button @click="changeName">呵呵</button>
+      <!-- html内容解析 -->
       <div k-html="html"></div>
     </div>
     <script src="./compile.js"></script>
@@ -30,15 +37,13 @@
         created() {
           console.log("开始啦");
           setTimeout(() => {
-            this.$data.name = "我是测试";
+            this.name = "我是测试";
           }, 1500);
         },
         methods: {
           changeName() {
             this.name = "哈喽，开课吧";
             this.age = 1;
-            this.id = "xx";
-            console.log(1, this);
           }
         }
       });

@@ -1,89 +1,107 @@
-// new KVue({
-//     data: {
-//         msg: 'hello，vue'
-//     }
-// })
+// new KVue({data:{...}})
 
 class KVue {
   constructor(options) {
-    // 传入data选项
+    this.$options = options;
+
+    // 数据响应化
     this.$data = options.data;
-    // 响应化
     this.observe(this.$data);
 
+    // 模拟一下watcher创建
     // new Watcher();
+    // // 通过访问test属性触发get函数，添加依赖
     // this.$data.test;
     // new Watcher();
     // this.$data.foo.bar;
 
-    // 编译
     new Compile(options.el, this);
 
-    // 执行created钩子
-    options.created.call(this);
+    // created执行
+    if (options.created) {
+        options.created.call(this);
+    }
   }
 
   observe(value) {
     if (!value || typeof value !== "object") {
       return;
     }
-    // 遍历，执行数据响应式
+
+    // 遍历该对象
     Object.keys(value).forEach(key => {
-      this.defineReactive(value, key);
+      this.defineReactive(value, key, value[key]);
+    //   代理data中的属性到vue实例上
+      this.proxyData(key);
     });
   }
 
-  defineReactive(obj, key) {
-    const val = obj[key];
-    // 递归
-    // this.observe(val);
+  // 数据响应化
+  defineReactive(obj, key, val) {
+    this.observe(val); // 递归解决数据嵌套
 
-    const dep = new Dep(key);
+    const dep = new Dep();
 
-    // 给obj定义属性
     Object.defineProperty(obj, key, {
       get() {
         Dep.target && dep.addDep(Dep.target);
-        // Dep.target = null;
         return val;
       },
       set(newVal) {
         if (newVal === val) {
           return;
         }
+        val = newVal;
         // console.log(`${key}属性更新了：${val}`);
-        dep.notify(key, newVal);
+        dep.notify();
       }
     });
   }
+
+  proxyData(key) {
+      Object.defineProperty(this, key, {
+          get(){
+            return this.$data[key]
+          },
+          set(newVal){
+            this.$data[key] = newVal;
+          }
+      })
+  }
+
 }
 
+// Dep：用来管理Watcher
 class Dep {
-  constructor(name) {
-    this.name = name;
-    // 存储所有依赖
+  constructor() {
+    // 这里存放若干依赖（watcher）
     this.deps = [];
   }
+
   addDep(dep) {
     this.deps.push(dep);
   }
-  notify(...args) {
-    this.deps.forEach(dep => dep.update(...args));
+
+  notify() {
+    this.deps.forEach(dep => dep.update());
   }
 }
 
+// Watcher
 class Watcher {
   constructor(vm, key, cb) {
-    this.vm = vm;
-    this.key = key;
-    this.cb = cb;
+      this.vm = vm;
+      this.key = key;
+      this.cb = cb;
 
+    // 将当前watcher实例指定到Dep静态属性target
     Dep.target = this;
-    this.vm[this.key];
-    // Dep.target = null;
+    this.vm[this.key]; // 触发getter，添加依赖
+    Dep.target = null;
   }
-  update(key, val) {
-    console.log(`${key}属性更新了：${val}`);
-    this.cb.call(this.vm, val);
+
+  update() {
+    // console.log("属性更新了");
+    this.cb.call(this.vm, this.vm[this.key]);
   }
 }
